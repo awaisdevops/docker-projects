@@ -2,13 +2,13 @@
 
 This guide explains how to deploy a NodeJs application using MongoDB and Mongo Express with the help of docker.
 
-![Mongo Express UI](ss/screen1.png)
-
 *Example of the Mongo Express UI showing databases.*
 
-![Mongo Express Login](ss/screen2.png)
+![Mongo Express UI](ss/screen1.png)
 
 *Login page for Mongo Express.*
+
+![Mongo Express Login](ss/screen2.png)
 
 ---
 
