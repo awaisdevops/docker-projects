@@ -4,10 +4,10 @@
 
 You can find the relevant screenshots in the `ss` folder of this repository.
 
-![Mongo Express UI](docker-projects/ss/Screenshot from 2025-03-25 16-13-59.png.png)
+![Mongo Express UI](docker-projects/ss/screen1.png)
 *Example of the Mongo Express UI showing databases.*
 
-![Mongo Express Login](docker-projects/ss/Screenshot from 2025-03-25 16-15-07.png.png)
+![Mongo Express Login](docker-projects/ss/screen2.png)
 *Login page for Mongo Express.*
 
 ---
