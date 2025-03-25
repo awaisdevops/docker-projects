@@ -1,8 +1,6 @@
 # Containerized NodeJs Application 
 
-## Screenshots
-
-You can find the relevant screenshots in the `ss` folder of this repository.
+This guide explains how to deploy a NodeJs application using MongoDB and Mongo Express with the help of docker.
 
 ![Mongo Express UI](ss/screen1.png)
 *Example of the Mongo Express UI showing databases.*
@@ -11,8 +9,6 @@ You can find the relevant screenshots in the `ss` folder of this repository.
 *Login page for Mongo Express.*
 
 ---
-
-This guide explains how to deploy a NodeJs application using MongoDB and Mongo Express with the help of docker.
 
 ## Prerequisites
 
