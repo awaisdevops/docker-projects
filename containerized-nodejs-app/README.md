@@ -4,10 +4,10 @@
 
 You can find the relevant screenshots in the `ss` folder of this repository.
 
-![Mongo Express UI](ss/screenshot1.png)
+![Mongo Express UI](docker-projects/ss/screenshot1.png)
 *Example of the Mongo Express UI showing databases.*
 
-![Mongo Express Login](ss/screenshot2.png)
+![Mongo Express Login](docker-projects/ss/screenshot2.png)
 *Login page for Mongo Express.*
 
 ---
@@ -30,7 +30,7 @@ Run the following commands to clone the repository and start the application:
 cd /
 mkdir jsapplication
 cd jsapplication/
-git clone https://gitlab.com/nanuchi/developing-with-docker.git
+git clone https://github.com/awaisdevops/docker-projects.git
 
 npm install  # Install dependencies
 node server.js  # Run the application
@@ -145,11 +145,3 @@ If successful, you'll see the output: `Connected to MongoDB`.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-### Key Updates:
-1. **Screenshots Section**: Added at the top of the README, which references images in the `ss` folder.
-   - Replace the file names `screenshot1.png` and `screenshot2.png` with the actual filenames of your screenshots.
-2. **Image Placement**: The screenshots are included using Markdown image syntax `![alt text](ss/filename.png)`.
-
-Ensure that the screenshots you want to reference are placed in the `ss` folder in your repository before pushing the changes. Let me know if you need further adjustments!
