@@ -93,9 +93,6 @@ Access the following URLs to interact with the services:
 - MongoDB UI: [http://localhost:8081](http://localhost:8081)
 - Application: [http://localhost:3000](http://localhost:3000)
 
-- ![Image 1](assets/image1.png)
-- ![Image 2](assets/image2.png)
-
 ## Push and Pull Docker Image to AWS ECR
 
 ### Create an AWS ECR Repository
