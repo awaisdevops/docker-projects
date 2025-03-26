@@ -1,72 +1,282 @@
-## demo app - developing with Docker
+# Docker Application Setup with AWS ECR & Nexus
 
-This demo app shows a simple user profile app set up using 
-- index.html with pure js and css styles
-- nodejs backend with express module
-- mongodb for data storage
+This project sets up a Node.js application using Docker, building a Docker image, running containers with `docker-compose`, and pushing and pulling images to AWS ECR and Nexus repositories.
 
-All components are docker-based
+## Clone the Application Code Repository
 
-### With Docker
+Clone the application repository from GitHub:
 
-#### To start the application
+```bash
+git clone https://github.com/awaisdevops/docker-projects.git
+cd docker-composr-images-aws-ecr-nexus
+```
 
-Step 1: Create docker network
+## Package the Application into a Docker Image
 
-    docker network create mongo-network 
+### Create the `Dockerfile`
 
-Step 2: start mongodb 
+Create a `Dockerfile` with the following content:
 
-    docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password --name mongodb --net mongo-network mongo    
+```dockerfile
+FROM node:13-alpine
 
-Step 3: start mongo-express
-    
-    docker run -d -p 8081:8081 -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin -e ME_CONFIG_MONGODB_ADMINPASSWORD=password --net mongo-network --name mongo-express -e ME_CONFIG_MONGODB_SERVER=mongodb mongo-express   
+ENV MONGO_DB_USERNAME=admin \
+    MONGO_DB_PWD=password
 
-_NOTE: creating docker-network in optional. You can start both containers in a default network. In this case, just emit `--net` flag in `docker run` command_
+RUN mkdir -p /home/app
 
-Step 4: open mongo-express from browser
+COPY ./app /home/app
 
-    http://localhost:8081
+# Set default dir so that next commands execute in /home/app dir
+WORKDIR /home/app
 
-Step 5: create `user-account` _db_ and `users` _collection_ in mongo-express
+RUN npm install
 
-Step 6: Start your nodejs application locally - go to `app` directory of project 
+# No need for /home/app/server.js because of WORKDIR
+CMD ["node", "server.js"]
+```
 
-    cd app
-    npm install 
-    node server.js
-    
-Step 7: Access you nodejs application UI from browser
+### Build the Docker Image
 
-    http://localhost:3000
+Use the `Dockerfile` to build the Docker image:
 
-### With Docker Compose
+```bash
+docker build -t my-app:1.0 .
+```
 
-#### To start the application
+## Create `docker-compose.yaml`
 
-Step 1: start mongodb and mongo-express
+Create a `docker-compose.yaml` file with the following content:
 
-    docker-compose -f docker-compose.yaml up
-    
-_You can access the mongo-express under localhost:8080 from your browser_
-    
-Step 2: in mongo-express UI - create a new database "my-db"
+```yaml
+version: '3'
+services:
+  my-app:
+    image: my-app:1.0
+    ports:
+      - 3000:3000
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    depends_on:
+      - "mongodb"
+volumes:
+  mongo-data:
+    driver: local
+```
 
-Step 3: in mongo-express UI - create a new collection "users" in the database "my-db"       
-    
-Step 4: start node server 
+### Start All Containers with `docker-compose`
 
-    cd app
-    npm install
-    node server.js
-    
-Step 5: access the nodejs application from browser 
+Run the following command to start all containers:
 
-    http://localhost:3000
+```bash
+docker-compose -f docker-compose.yaml up
+```
 
-#### To build a docker image from the application
+Access the following URLs to interact with the services:
 
-    docker build -t my-app:1.0 .       
-    
-The dot "." at the end of the command denotes location of the Dockerfile.
+- MongoDB UI: [http://localhost:8081](http://localhost:8081)
+- Application: [http://localhost:3000](http://localhost:3000)
+
+- ![Image 1](assets/image1.png)
+- ![Image 2](assets/image2.png)
+
+## Push and Pull Docker Image to AWS ECR
+
+### Create an AWS ECR Repository
+
+1. Go to the AWS Management Console > Services > ECR.
+2. Create a new repository by configuring the settings.
+
+You can also use the following command to create an ECR repository from the AWS CLI:
+
+```bash
+aws ecr create-repository --repository-name <repository_name> --region <region>
+```
+
+For example:
+
+```bash
+aws ecr create-repository --repository-name my-repository --region us-west-2
+```
+
+### Authenticate Docker to AWS ECR
+
+Before pushing the image, ensure that you have configured the AWS CLI.
+
+Run the following command to authenticate Docker to your AWS ECR:
+
+```bash
+aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+```
+
+### Tag the Docker Image
+
+Tag your Docker image for AWS ECR:
+
+```bash
+docker tag my-app:latest 123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repository:latest
+```
+
+### Push the Docker Image to AWS ECR
+
+Push the image to your AWS ECR repository:
+
+```bash
+docker push 123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repository:latest
+```
+
+### Modify compose file for AWS ECR
+
+Update your compose file to use the AWS ECR image:
+
+```yaml
+version: '3'
+services:
+  my-app:
+    image: 123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repository:latest
+    ports:
+      - 3000:3000
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    depends_on:
+      - "mongodb"
+volumes:
+  mongo-data:
+    driver: local
+```
+
+Now, run the containers using `docker-compose`:
+
+```bash
+docker-compose -f aws-ecr-docker-compose.yaml up
+```
+
+## Push and Pull Docker Image to Nexus
+
+### Create a Docker Repository in Nexus
+
+1. Create a Docker repository in Nexus.
+2. Configure the repository's port and access settings.
+3. Create roles with permissions and users to access the repository.
+
+### Configure Docker to Trust Nexus Registry
+
+Edit `/etc/docker/daemon.json` to allow Docker to trust the Nexus registry:
+
+```json
+{
+  "insecure-registries": ["<nexus_host>:<docker_port>"]
+}
+```
+
+Restart Docker:
+
+```bash
+sudo systemctl restart docker
+```
+
+### Login to Nexus
+
+Log in to Nexus using Docker:
+
+```bash
+docker login <nexus_host>:<docker_port>
+```
+
+### Tag the Docker Image
+
+Tag your Docker image for Nexus:
+
+```bash
+docker tag my-app:1.0 mycompany.nexus.com:8083/my-docker-repo/my-app:1.0
+```
+
+### Push the Docker Image to Nexus
+
+Push the image to your Nexus repository:
+
+```bash
+docker push mycompany.nexus.com:8083/my-docker-repo/my-app:1.0
+```
+
+### Pull the Docker Image from Nexus
+
+You can pull the image from your Nexus repository using:
+
+```bash
+docker pull mycompany.nexus.com:8083/my-docker-repo/my-app:1.0
+```
+
+### Modify compose for Nexus
+
+Update your compose to use the Nexus image:
+
+```yaml
+version: '3'
+services:
+  my-app:
+    image: mycompany.nexus.com:8083/my-docker-repo/my-app:1.0
+    ports:
+      - 3000:3000
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    depends_on:
+      - "mongodb"
+volumes:
+  mongo-data:
+    driver: local
+```
+
+Now, run the containers using `docker-compose`:
+
+```bash
+docker-compose -f nexus-docker-compose.yaml up
+```
