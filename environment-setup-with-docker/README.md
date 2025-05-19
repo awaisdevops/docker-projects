@@ -65,3 +65,7 @@ npm start
 ```
 
 Step 7: Access the application in your browser under `http://localhost:3000` and edit a user profile. You should see the edited data in the collection `users` of the mongo database `user-profile`.
+
+## License
+
+MIT License
